@@ -2,58 +2,55 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>NexusOS Sequoia - Connectivity Update</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <title>NexusOS Sequoia</title>
     <style>
         :root {
-            --mac-blur: blur(35px);
-            --win-bg: rgba(255, 255, 255, 0.85);
+            --mac-blur: blur(25px);
             --accent: #007aff;
             --wallpaper: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920');
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100vh; width: 100vw; overflow: hidden; font-family: -apple-system, sans-serif; background: var(--wallpaper) center/cover; }
 
-        /* --- Écran de Connexion --- */
-        #login-screen { position: fixed; inset: 0; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--wallpaper) center/cover; transition: 0.8s; }
-        #login-screen::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(20px); }
+        /* --- LOCK SCREEN --- */
+        #login-screen {
+            position: fixed; inset: 0; z-index: 20000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--wallpaper) center/cover; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #login-screen::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(20px); }
         .login-content { position: relative; z-index: 1; text-align: center; color: white; }
-        .user-avatar { width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.2); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 1px solid rgba(255,255,255,0.3); }
+        .user-avatar { width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,0.2); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 1px solid rgba(255,255,255,0.3); }
+        .login-input { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 15px; color: white; text-align: center; width: 200px; backdrop-filter: blur(10px); margin-top: 10px; }
 
-        /* --- Barre de Menu --- */
+        /* --- BARRE DE MENU --- */
         #menu-bar { position: fixed; top: 0; width: 100%; height: 30px; background: rgba(0, 0, 0, 0.3); backdrop-filter: var(--mac-blur); display: flex; align-items: center; padding: 0 15px; font-size: 13px; color: white; z-index: 10000; }
-        .menu-right { margin-left: auto; display: flex; align-items: center; gap: 15px; }
-        .status-icon { cursor: pointer; opacity: 0.9; transition: 0.2s; }
-        .status-icon:hover { opacity: 1; transform: scale(1.1); }
+        .menu-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
 
-        /* --- Menus Déroulants (Connectivité) --- */
-        .dropdown {
-            position: absolute; top: 35px; right: 10px; width: 280px;
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: var(--mac-blur);
-            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: none; flex-direction: column; padding: 12px; z-index: 10001;
-            border: 0.5px solid rgba(0,0,0,0.1); color: #333;
-        }
-        .drop-header { font-weight: bold; margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between; }
-        .drop-item { 
-            padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; 
-            align-items: center; gap: 10px; transition: 0.2s; font-size: 13px;
-        }
-        .drop-item:hover { background: var(--accent); color: white; }
-        .active-status { color: var(--accent); font-weight: bold; }
+        /* --- FENÊTRES --- */
+        .window { position: absolute; background: rgba(255,255,255,0.9); backdrop-filter: var(--mac-blur); border-radius: 12px; display: none; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 0.5px solid rgba(0,0,0,0.1); z-index: 10; overflow: hidden; }
+        .win-header { height: 35px; display: flex; align-items: center; padding: 0 12px; cursor: move; background: rgba(0,0,0,0.05); }
+        .lights { display: flex; gap: 6px; }
+        .light { width: 10px; height: 10px; border-radius: 50%; }
+        .close { background: #ff5f56; } .max { background: #27c93f; }
+        .win-title { flex: 1; text-align: center; color: #333; font-size: 12px; font-weight: 600; }
+        .win-body { flex: 1; overflow: auto; background: white; }
 
-        /* --- Dock --- */
-        #dock-container { position: fixed; bottom: 15px; width: 100%; display: flex; justify-content: center; z-index: 5000; }
-        #dock { background: rgba(0, 0, 0, 0.4); backdrop-filter: var(--mac-blur); padding: 8px; border-radius: 20px; display: flex; gap: 12px; border: 0.5px solid rgba(255, 255, 255, 0.2); }
-        .dock-app { width: 50px; height: 50px; cursor: pointer; border-radius: 12px; transition: 0.2s; background: #333; }
-        .dock-app img { width: 100%; height: 100%; border-radius: 12px; }
-        .dock-app:hover { transform: scale(1.2) translateY(-10px); }
+        /* --- NEXUS SEARCH --- */
+        .nexus-container { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .nexus-logo { font-size: 45px; font-weight: bold; margin-bottom: 20px; }
+        .search-bar { width: 90%; padding: 12px 20px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
 
-        /* Switch Toggle Simple */
-        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
-        input:checked + .slider { background-color: var(--accent); }
+        /* --- DOCK --- */
+        #dock-container { position: fixed; bottom: 10px; width: 100%; display: flex; justify-content: center; z-index: 5000; }
+        #dock { background: rgba(0, 0, 0, 0.3); backdrop-filter: var(--mac-blur); padding: 8px; border-radius: 18px; display: flex; gap: 10px; border: 0.5px solid rgba(255, 255, 255, 0.2); }
+        .dock-app { width: 50px; height: 50px; cursor: pointer; transition: 0.2s; position: relative; }
+        .dock-app img { width: 100%; height: 100%; border-radius: 11px; }
+        .indicator { position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: white; border-radius: 50%; display: none; }
     </style>
 </head>
 <body>
@@ -61,100 +58,106 @@
 <div id="login-screen">
     <div class="login-content">
         <div class="user-avatar">👤</div>
-        <h2>Nexus Admin</h2>
-        <input type="password" placeholder="Mot de passe" style="margin-top:15px; padding:8px; border-radius:15px; border:none; text-align:center;" onkeydown="if(event.key==='Enter') login()">
+        <h3>Nexus Admin</h3>
+        <input type="password" class="login-input" placeholder="Mot de passe" onkeydown="if(event.key==='Enter') login()">
     </div>
 </div>
 
 <div id="menu-bar">
-    <div style="font-weight: bold;"></div>
+    <div style="font-weight:bold;"></div>
     <div class="menu-right">
-        <span class="status-icon" onclick="toggleDrop('wifi-menu')">📡 <span id="wifi-label">Nexus_5G</span></span>
-        <span class="status-icon" onclick="toggleDrop('bt-menu')">🎧</span>
-        <span class="status-icon">🔋 100%</span>
+        <span style="font-size: 11px;">📡 <span id="wifi-status">Nexus_5G</span></span>
         <span id="clock">00:00</span>
     </div>
 </div>
 
-<div id="wifi-menu" class="dropdown">
-    <div class="drop-header">Wi-Fi <label class="switch"><input type="checkbox" checked onchange="toggleConnection('wifi')"><span class="slider"></span></label></div>
-    <div id="wifi-list">
-        <div class="drop-item" onclick="connectTo('Nexus_5G')">✓ Nexus_5G 🔒</div>
-        <div class="drop-item" onclick="connectTo('Starlink_Ext')">Starlink_Guest</div>
-        <div class="drop-item" onclick="connectTo('iPhone_de_Nexus')">Point d'accès iPhone</div>
+<div id="win-browser" class="window" style="width:90%; height:70%; top:50px; left:5%;">
+    <div class="win-header">
+        <div class="lights"><div class="light close" onclick="closeWin('win-browser')"></div></div>
+        <div class="win-title">Nexus Browser</div>
     </div>
-    <div style="border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;" class="drop-item">Réglages Wi-Fi...</div>
+    <div class="win-body">
+        <div class="nexus-container">
+            <div class="nexus-logo">
+                <span style="color:#4285F4">N</span><span style="color:#EA4335">e</span><span style="color:#FBBC05">x</span><span style="color:#4285F4">u</span><span style="color:#34A853">s</span>
+            </div>
+            <input type="text" class="search-bar" placeholder="Rechercher avec Nexus Search..." onkeydown="if(event.key==='Enter') alert('Recherche en cours...')">
+        </div>
+    </div>
 </div>
 
-<div id="bt-menu" class="dropdown">
-    <div class="drop-header">Bluetooth <label class="switch"><input type="checkbox" id="bt-switch" onchange="toggleConnection('bt')"><span class="slider"></span></label></div>
-    <div id="bt-list" style="opacity: 0.5;">
-        <div class="drop-item">AirPods Pro (Déconnecté)</div>
-        <div class="drop-item">Magic Keyboard</div>
+<div id="win-files" class="window" style="width:300px; height:400px; top:100px; left:20px;">
+    <div class="win-header">
+        <div class="lights"><div class="light close" onclick="closeWin('win-files')"></div></div>
+        <div class="win-title">Finder</div>
+    </div>
+    <div class="win-body" style="padding: 15px;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div>📁 Documents</div>
+            <div>📂 Téléchargements</div>
+            <div>🖼️ Photos</div>
+        </div>
     </div>
 </div>
 
 <div id="dock-container">
     <div id="dock">
-        <div class="dock-app"><img src="https://img.icons8.com/fluency/96/folder-invoices.png"></div>
-        <div class="dock-app"><img src="nexus_logo.png" onerror="this.src='https://img.icons8.com/fluency/96/chrome.png'"></div>
-        <div class="dock-app"><img src="https://img.icons8.com/fluency/96/settings.png"></div>
+        <div class="dock-app" id="dock-files" onclick="openWin('win-files')">
+            <img src="https://img.icons8.com/fluency/96/folder-invoices.png">
+            <div class="indicator"></div>
+        </div>
+        <div class="dock-app" id="dock-browser" onclick="openWin('win-browser')">
+            <img src="https://img.icons8.com/fluency/96/chrome.png">
+            <div class="indicator"></div>
+        </div>
+        <div class="dock-app" onclick="location.reload()">
+            <img src="https://img.icons8.com/fluency/96/restart.png">
+        </div>
     </div>
 </div>
 
 <script>
+    let zIdx = 100;
     function login() {
         document.getElementById('login-screen').style.opacity = '0';
-        setTimeout(() => document.getElementById('login-screen').style.display = 'none', 800);
+        document.getElementById('login-screen').style.transform = 'scale(1.1)';
+        setTimeout(() => document.getElementById('login-screen').style.display = 'none', 600);
     }
-
-    function toggleDrop(id) {
-        const menu = document.getElementById(id);
-        const isVisible = menu.style.display === 'flex';
-        // Fermer les autres menus
-        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
-        menu.style.display = isVisible ? 'none' : 'flex';
+    function openWin(id) {
+        const win = document.getElementById(id);
+        win.style.display = 'flex';
+        win.style.zIndex = ++zIdx;
+        const ind = document.querySelector('#dock-' + id.split('-')[1] + ' .indicator');
+        if(ind) ind.style.display = 'block';
     }
-
-    function toggleConnection(type) {
-        if(type === 'wifi') {
-            const label = document.getElementById('wifi-label');
-            const list = document.getElementById('wifi-list');
-            if(label.innerText === "Off") {
-                label.innerText = "Nexus_5G";
-                list.style.opacity = "1";
-            } else {
-                label.innerText = "Off";
-                list.style.opacity = "0.3";
-            }
-        }
-        if(type === 'bt') {
-            const list = document.getElementById('bt-list');
-            list.style.opacity = document.getElementById('bt-switch').checked ? "1" : "0.5";
-        }
+    function closeWin(id) {
+        document.getElementById(id).style.display = 'none';
+        const ind = document.querySelector('#dock-' + id.split('-')[1] + ' .indicator');
+        if(ind) ind.style.display = 'none';
     }
-
-    function connectTo(name) {
-        document.getElementById('wifi-label').innerText = "Connexion...";
-        setTimeout(() => {
-            document.getElementById('wifi-label').innerText = name;
-            document.getElementById('wifi-menu').style.display = 'none';
-        }, 1500);
-    }
-
-    // Horloge
     function updateClock() {
-        const now = new Date();
-        document.getElementById('clock').innerText = now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
     }
     setInterval(updateClock, 1000); updateClock();
 
-    // Fermer les menus si on clique sur le bureau
-    window.onclick = function(event) {
-        if (!event.target.closest('.status-icon') && !event.target.closest('.dropdown')) {
-            document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
-        }
-    }
+    // Système Drag (Compatible Tactile Mobile)
+    document.querySelectorAll('.win-header').forEach(h => {
+        let dragging = false, ox, oy;
+        const move = (e) => {
+            if(!dragging) return;
+            const ev = e.touches ? e.touches[0] : e;
+            h.parentElement.style.left = (ev.clientX - ox) + 'px';
+            h.parentElement.style.top = (ev.clientY - oy) + 'px';
+        };
+        h.onmousedown = h.ontouchstart = (e) => {
+            dragging = true; h.parentElement.style.zIndex = ++zIdx;
+            const ev = e.touches ? e.touches[0] : e;
+            ox = ev.clientX - h.parentElement.offsetLeft;
+            oy = ev.clientY - h.parentElement.offsetTop;
+        };
+        window.onmousemove = window.ontouchmove = move;
+        window.onmouseup = window.ontouchend = () => dragging = false;
+    });
 </script>
 </body>
 </html>
